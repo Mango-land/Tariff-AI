@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Поиск тарифов — ТарифМатч</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #4f8ef7;
+  --accent2: #a78bfa;
+  --bg-deep: #050d1a;
+  --bg-card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-deep);
+  color: #e8eaf6;
+  min-height: 100vh;
+}
+h1,h2,h3,.font-display { font-family: 'Syne', sans-serif; }
+
+/* Сетка точек */
+body {
+  background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-color: var(--bg-deep);
+}
+
+nav {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: rgba(5,13,26,0.85);
+  border-bottom: 1px solid var(--border);
+}
+
+.glass {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ===== ДВОЙНОЙ RANGE СЛАЙДЕР ===== */
+.range-container {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+.range-track {
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.range-fill {
+  position: absolute;
+  height: 4px;
+  background: linear-gradient(90deg, #4f8ef7, #a78bfa);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.range-input {
+  position: absolute;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: transparent;
+  pointer-events: none;
+  outline: none;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f8ef7, #6b6ef5);
+  border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: 0 0 0 4px rgba(79,142,247,0.15), 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 6px rgba(79,142,247,0.25), 0 2px 8px rgba(0,0,0,0.4);
+}
+.range-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f8ef7, #6b6ef5);
+  border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(79,142,247,0.15);
+}
+.range-input:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 8px rgba(79,142,247,0.3), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.unlimited-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(167,139,250,0.2));
+  border: 1px solid rgba(79,142,247,0.3);
+  color: #7eb8ff;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%,100% { box-shadow: 0 0 0 0 rgba(79,142,247,0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(79,142,247,0); }
+}
+
+/* ===== ЧЕКБОКСЫ ===== */
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.custom-checkbox:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.custom-checkbox input { display: none; }
+.custom-checkbox .check-box {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.04);
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.custom-checkbox input:checked + .check-box {
+  background: linear-gradient(135deg, #4f8ef7, #6b6ef5);
+  border-color: #4f8ef7;
+}
+.custom-checkbox input:checked + .check-box::after {
+  content: '✓';
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ===== ОПЕРАТОРЫ ===== */
+.op-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.op-toggle:hover { background: rgba(255,255,255,0.06); }
+.op-toggle.active { background: rgba(255,255,255,0.08); }
+.op-mts.active { border-color: rgba(232,56,74,0.6); background: rgba(232,56,74,0.1); }
+.op-beeline.active { border-color: rgba(245,194,0,0.6); background: rgba(245,194,0,0.1); }
+.op-tele2.active { border-color: rgba(200,200,200,0.4); background: rgba(200,200,200,0.08); }
+.op-megafon.active { border-color: rgba(40,200,64,0.6); background: rgba(40,200,64,0.1); }
+.op-yota.active { border-color: rgba(79,142,247,0.6); background: rgba(79,142,247,0.1); }
+
+/* ===== КАРТОЧКИ ТАРИФОВ ===== */
+.tariff-card {
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 22px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeIn 0.4s both;
+  position: relative;
+  overflow: hidden;
+}
+.tariff-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.tariff-card:hover::before { opacity: 1; }
+.tariff-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(79,142,247,0.25);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(79,142,247,0.1);
+}
+
+/* Цвета операторов на карточках */
+.card-mts::before { background: linear-gradient(90deg, #e8384a, transparent); }
+.card-beeline::before { background: linear-gradient(90deg, #f5c200, transparent); }
+.card-tele2::before { background: linear-gradient(90deg, #c0c0c0, transparent); }
+.card-megafon::before { background: linear-gradient(90deg, #28c840, transparent); }
+.card-yota::before { background: linear-gradient(90deg, #4f8ef7, transparent); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.price-tag {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+}
+
+/* Параметр строка */
+.param-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.param-row:last-child { border-bottom: none; }
+
+/* Кнопки в карточке */
+.btn-card {
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+}
+.btn-compare {
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.3);
+  color: #7eb8ff;
+}
+.btn-compare:hover {
+  background: rgba(79,142,247,0.2);
+  border-color: rgba(79,142,247,0.5);
+}
+.btn-compare.in-compare {
+  background: rgba(79,142,247,0.25);
+  border-color: #4f8ef7;
+  color: #a8d4ff;
+}
+.btn-details {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #c0c8e0;
+}
+.btn-details:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+/* Сортировка */
+.sort-btn {
+  padding: 7px 14px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #8899bb;
+  font-family: 'Syne', sans-serif;
+}
+.sort-btn.active, .sort-btn:hover {
+  background: rgba(79,142,247,0.12);
+  border-color: rgba(79,142,247,0.3);
+  color: #7eb8ff;
+}
+
+/* Счётчик сравнения */
+#compare-counter {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Нет результатов */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8899bb;
+}
+
+/* Боковая панель на мобильных */
+#filter-sidebar {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.divider { height: 1px; background: rgba(255,255,255,0.06); }
+
+/* Скролл */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+</style>
+</head>
+<body>
+
+<!-- ===== НАВИГАЦИЯ ===== -->
+<nav class="sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex items-center justify-between h-14">
+      <a href="index.html" class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs">TM</div>
+        <span class="font-display font-bold text-white">Тариф<span style="color:#4f8ef7">Матч</span></span>
+      </a>
+      <div class="flex items-center gap-3">
+        <!-- Кнопка фильтров (мобильная) -->
+        <button id="filter-btn" class="md:hidden flex items-center gap-2 text-sm text-gray-300 glass px-3 py-2 rounded-xl">
+          <i class="fa-solid fa-sliders"></i> Фильтры
+        </button>
+        <a href="search_ai.html" class="hidden sm:flex items-center gap-2 text-sm px-3 py-2 rounded-xl" style="background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(167,139,250,0.2));border:1px solid rgba(167,139,250,0.3);color:#c4b5fd;">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> AI-подбор
+        </a>
+        <a href="compare.html" id="compare-counter" class="hidden text-sm px-3 py-2 rounded-xl items-center gap-2" style="background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);color:#7eb8ff;">
+          <i class="fa-solid fa-scale-balanced text-xs"></i>
+          <span id="compare-count">0</span>/2
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex gap-6">
+
+  <!-- ===== ФИЛЬТРЫ (боковая панель) ===== -->
+  <aside id="filter-sidebar" class="w-72 flex-shrink-0 hidden md:block">
+    <div class="glass rounded-2xl p-6 sticky top-20" style="max-height: calc(100vh - 100px); overflow-y: auto;">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display font-bold text-white text-lg">Фильтры</h2>
+        <button id="reset-btn" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">Сбросить</button>
+      </div>
+
+      <!-- БЮДЖЕТ -->
+      <div class="mb-7">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <i class="fa-solid fa-ruble-sign text-blue-400 text-xs"></i> Бюджет
+          </label>
+          <div class="flex items-center gap-1 text-sm">
+            <span id="budget-min-label" class="text-blue-300 font-semibold">0</span>
+            <span class="text-gray-600">–</span>
+            <span id="budget-max-label" class="text-blue-300 font-semibold">3000 ₽</span>
+          </div>
+        </div>
+        <div class="range-container">
+          <div class="range-track"></div>
+          <div id="budget-fill" class="range-fill"></div>
+          <input type="range" class="range-input" id="budget-min" min="0" max="3000" step="50" value="0">
+          <input type="range" class="range-input" id="budget-max" min="0" max="3000" step="50" value="3000">
+        </div>
+        <div class="flex justify-between text-xs text-gray-600 mt-1">
+          <span>0 ₽</span><span>3000 ₽</span>
+        </div>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- ИНТЕРНЕТ -->
+      <div class="mb-7">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-green-400 text-xs"></i> Интернет
+          </label>
+          <div class="flex items-center gap-1 text-sm">
+            <span id="inet-min-label" class="text-green-300 font-semibold">0</span>
+            <span class="text-gray-600">–</span>
+            <span id="inet-max-label" class="text-green-300 font-semibold">∞</span>
+          </div>
+        </div>
+        <div class="range-container">
+          <div class="range-track"></div>
+          <div id="inet-fill" class="range-fill" style="background:linear-gradient(90deg,#22c55e,#4ade80);"></div>
+          <input type="range" class="range-input" id="inet-min" min="0" max="50" step="1" value="0"
+            style="--thumb-color:#22c55e">
+          <input type="range" class="range-input" id="inet-max" min="0" max="50" step="1" value="50">
+        </div>
+        <div class="flex justify-between items-center text-xs text-gray-600 mt-1">
+          <span>0 ГБ</span>
+          <span id="inet-unlim-badge" class="unlimited-badge"><i class="fa-solid fa-infinity text-xs"></i> Безлимит</span>
+          <span>50+ ГБ</span>
+        </div>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- МИНУТЫ -->
+      <div class="mb-7">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <i class="fa-solid fa-phone text-yellow-400 text-xs"></i> Минуты
+          </label>
+          <div class="flex items-center gap-1 text-sm">
+            <span id="min-min-label" class="text-yellow-300 font-semibold">0</span>
+            <span class="text-gray-600">–</span>
+            <span id="min-max-label" class="text-yellow-300 font-semibold">∞</span>
+          </div>
+        </div>
+        <div class="range-container">
+          <div class="range-track"></div>
+          <div id="min-fill" class="range-fill" style="background:linear-gradient(90deg,#eab308,#fde047);"></div>
+          <input type="range" class="range-input" id="min-min" min="0" max="2000" step="50" value="0">
+          <input type="range" class="range-input" id="min-max" min="0" max="2000" step="50" value="2000">
+        </div>
+        <div class="flex justify-between items-center text-xs text-gray-600 mt-1">
+          <span>0 мин</span>
+          <span id="min-unlim-badge" class="unlimited-badge"><i class="fa-solid fa-infinity text-xs"></i> Безлимит</span>
+          <span>2000+</span>
+        </div>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- SMS -->
+      <div class="mb-7">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <i class="fa-solid fa-comment-sms text-pink-400 text-xs"></i> SMS
+          </label>
+          <div class="flex items-center gap-1 text-sm">
+            <span id="sms-min-label" class="text-pink-300 font-semibold">0</span>
+            <span class="text-gray-600">–</span>
+            <span id="sms-max-label" class="text-pink-300 font-semibold">∞</span>
+          </div>
+        </div>
+        <div class="range-container">
+          <div class="range-track"></div>
+          <div id="sms-fill" class="range-fill" style="background:linear-gradient(90deg,#ec4899,#f9a8d4);"></div>
+          <input type="range" class="range-input" id="sms-min" min="0" max="1200" step="50" value="0">
+          <input type="range" class="range-input" id="sms-max" min="0" max="1200" step="50" value="1200">
+        </div>
+        <div class="flex justify-between items-center text-xs text-gray-600 mt-1">
+          <span>0 SMS</span>
+          <span id="sms-unlim-badge" class="unlimited-badge"><i class="fa-solid fa-infinity text-xs"></i> Безлимит</span>
+          <span>1200+</span>
+        </div>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- БЕЗЛИМИТЫ НА СЕРВИСЫ -->
+      <div class="mb-7">
+        <label class="text-sm font-semibold text-gray-300 block mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-star text-violet-400 text-xs"></i> Безлимит на
+        </label>
+        <div class="space-y-1">
+          <label class="custom-checkbox">
+            <input type="checkbox" class="service-check" value="messengers">
+            <div class="check-box"></div>
+            <i class="fa-brands fa-telegram text-blue-400 text-sm w-5"></i>
+            <span class="text-sm text-gray-300">Мессенджеры</span>
+          </label>
+          <label class="custom-checkbox">
+            <input type="checkbox" class="service-check" value="social">
+            <div class="check-box"></div>
+            <i class="fa-brands fa-vk text-blue-500 text-sm w-5"></i>
+            <span class="text-sm text-gray-300">Соцсети</span>
+          </label>
+          <label class="custom-checkbox">
+            <input type="checkbox" class="service-check" value="video">
+            <div class="check-box"></div>
+            <i class="fa-brands fa-youtube text-red-500 text-sm w-5"></i>
+            <span class="text-sm text-gray-300">Видеохостинги</span>
+          </label>
+          <label class="custom-checkbox">
+            <input type="checkbox" class="service-check" value="music">
+            <div class="check-box"></div>
+            <i class="fa-solid fa-music text-green-400 text-sm w-5"></i>
+            <span class="text-sm text-gray-300">Музыка</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- ОПЕРАТОРЫ -->
+      <div>
+        <label class="text-sm font-semibold text-gray-300 block mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-tower-cell text-gray-400 text-xs"></i> Операторы
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button class="op-toggle op-mts active" data-op="МТС">
+            <span style="color:#e8384a;font-weight:900;font-size:0.95rem">M</span>
+            <span style="color:#e8384a;">МТС</span>
+          </button>
+          <button class="op-toggle op-beeline active" data-op="Билайн">
+            <span style="color:#f5c200;font-weight:900;font-size:0.95rem">B</span>
+            <span style="color:#f5c200;">Билайн</span>
+          </button>
+          <button class="op-toggle op-tele2 active" data-op="Tele2">
+            <span style="font-weight:900;font-size:0.85rem">T2</span>
+            <span>Tele2</span>
+          </button>
+          <button class="op-toggle op-megafon active" data-op="Мегафон">
+            <span style="color:#28c840;font-weight:900;font-size:0.95rem">M</span>
+            <span style="color:#28c840;">Мегафон</span>
+          </button>
+          <button class="op-toggle op-yota active" data-op="Yota">
+            <span style="color:#4f8ef7;font-weight:900;font-size:0.95rem">Y</span>
+            <span style="color:#4f8ef7;">Yota</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <main class="flex-1 min-w-0">
+    <!-- Заголовок и сортировка -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="font-display text-2xl font-bold text-white">Тарифы</h1>
+        <p class="text-gray-500 text-sm mt-1">Найдено: <span id="result-count" class="text-blue-400 font-semibold">15</span> тарифов</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500">Сортировка:</span>
+        <button class="sort-btn active" id="sort-price">По цене</button>
+        <button class="sort-btn" id="sort-inet">По интернету</button>
+      </div>
+    </div>
+
+    <!-- Сетка тарифов -->
+    <div id="tariff-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <!-- Карточки генерируются JS -->
+    </div>
+
+    <div id="no-results" class="no-results hidden">
+      <i class="fa-solid fa-magnifying-glass text-4xl text-gray-700 mb-4 block"></i>
+      <p class="text-xl font-display font-bold text-gray-600 mb-2">Ничего не найдено</p>
+      <p class="text-gray-600 text-sm">Попробуй изменить параметры фильтра</p>
+    </div>
+  </main>
+</div>
+
+<!-- Мобильное модальное окно фильтров -->
+<div id="mobile-filter-overlay" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="filter-overlay-bg"></div>
+  <div class="absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-y-auto" style="background:#0a1628;border-top:1px solid rgba(255,255,255,0.1);max-height:85vh;">
+    <div class="p-4 border-b border-white/5 flex justify-between items-center sticky top-0 z-10" style="background:#0a1628;">
+      <h3 class="font-display font-bold text-white">Фильтры</h3>
+      <button id="close-filter" class="text-gray-400 hover:text-white p-2">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    <div id="mobile-filter-content" class="p-4">
+      <!-- Клонируется из sidebar JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Тост для сравнения -->
+<div id="compare-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 scale-95 pointer-events-none">
+  <div class="glass rounded-2xl px-6 py-4 flex items-center gap-4" style="border:1px solid rgba(79,142,247,0.3);min-width:300px;">
+    <i class="fa-solid fa-scale-balanced text-blue-400"></i>
+    <p class="text-white text-sm font-medium flex-1" id="toast-text">Тариф добавлен в сравнение</p>
+    <a href="compare.html" class="text-blue-400 text-xs font-semibold hover:text-blue-300 whitespace-nowrap">Открыть →</a>
+  </div>
+</div>
+
+<script>
+// ===== МАССИВ ТАРИФОВ =====
+const TARIFFS = [
+  { id:1, name:'МТС Smart Стартовый', op:'МТС', price:299, inet:5, minutes:200, sms:50, messengers:false, social:false, video:false, music:false, desc:'Начальный тариф для тех кто звонит немного' },
+  { id:2, name:'МТС Smart Продвинутый', op:'МТС', price:499, inet:15, minutes:400, sms:100, messengers:true, social:false, video:false, music:false, desc:'Интернет и звонки на каждый день' },
+  { id:3, name:'МТС Smart Безлимит', op:'МТС', price:799, inet:50, minutes:2000, sms:1200, messengers:true, social:true, video:false, music:true, desc:'Безлимит на звонки и мессенджеры' },
+  { id:4, name:'МТС Premium', op:'МТС', price:1299, inet:50, minutes:2000, sms:1200, messengers:true, social:true, video:true, music:true, desc:'Всё включено — максимальный тариф' },
+
+  { id:5, name:'Билайн Живи', op:'Билайн', price:399, inet:8, minutes:300, sms:0, messengers:true, social:false, video:false, music:false, desc:'Безлимит на мессенджеры, хорошие звонки' },
+  { id:6, name:'Билайн Живи +', op:'Билайн', price:599, inet:20, minutes:600, sms:100, messengers:true, social:true, video:false, music:false, desc:'Соцсети и мессенджеры без ограничений' },
+  { id:7, name:'Билайн Всё включено', op:'Билайн', price:999, inet:40, minutes:2000, sms:500, messengers:true, social:true, video:true, music:true, desc:'Полный безлимит на развлечения' },
+
+  { id:8, name:'Tele2 Мой разговор', op:'Tele2', price:249, inet:3, minutes:200, sms:50, messengers:false, social:false, video:false, music:false, desc:'Бюджетный тариф с базовыми опциями' },
+  { id:9, name:'Tele2 Мой онлайн', op:'Tele2', price:449, inet:25, minutes:500, sms:100, messengers:true, social:true, video:false, music:false, desc:'Много интернета по выгодной цене' },
+  { id:10, name:'Tele2 Максимум', op:'Tele2', price:749, inet:50, minutes:2000, sms:1200, messengers:true, social:true, video:true, music:false, desc:'Безлимит на видео и соцсети' },
+
+  { id:11, name:'Мегафон Включайся', op:'Мегафон', price:329, inet:6, minutes:250, sms:50, messengers:false, social:false, video:false, music:false, desc:'Доступный старт без переплат' },
+  { id:12, name:'Мегафон Разговор', op:'Мегафон', price:549, inet:12, minutes:2000, sms:200, messengers:true, social:false, video:false, music:false, desc:'Безлимит на звонки внутри сети' },
+  { id:13, name:'Мегафон Интернет+', op:'Мегафон', price:849, inet:40, minutes:800, sms:300, messengers:true, social:true, video:false, music:true, desc:'Большой интернет и музыка без ограничений' },
+
+  { id:14, name:'Yota Базовый', op:'Yota', price:399, inet:50, minutes:100, sms:50, messengers:true, social:false, video:false, music:false, desc:'Много интернета от онлайн-оператора' },
+  { id:15, name:'Yota Полный', op:'Yota', price:699, inet:50, minutes:1000, sms:200, messengers:true, social:true, video:true, music:true, desc:'Всё для жизни онлайн' },
+];
+
+// ===== СОСТОЯНИЕ ФИЛЬТРОВ =====
+const state = {
+  budget: { min: 0, max: 3000 },
+  inet: { min: 0, max: 50 },
+  minutes: { min: 0, max: 2000 },
+  sms: { min: 0, max: 1200 },
+  services: new Set(),
+  operators: new Set(['МТС','Билайн','Tele2','Мегафон','Yota']),
+  sort: 'price',
+};
+
+const compareList = JSON.parse(localStorage.getItem('compareList') || '[]');
+
+// ===== РЕНДЕР СЛАЙДЕРОВ =====
+function setupSlider(minId, maxId, fillId, minLabelId, maxLabelId, maxVal, unit, unlimBadgeId, unlimThreshold, labelTransform) {
+  const minEl = document.getElementById(minId);
+  const maxEl = document.getElementById(maxId);
+  const fillEl = document.getElementById(fillId);
+  const minLbl = document.getElementById(minLabelId);
+  const maxLbl = document.getElementById(maxLabelId);
+  const badge = unlimBadgeId ? document.getElementById(unlimBadgeId) : null;
+
+  function update() {
+    let minV = parseInt(minEl.value);
+    let maxV = parseInt(maxEl.value);
+
+    // Защита — мин не может быть больше макс
+    if (minV > maxV) {
+      if (this === minEl) { minV = maxV; minEl.value = minV; }
+      else { maxV = minV; maxEl.value = maxV; }
+    }
+
+    const pctMin = (minV / maxVal) * 100;
+    const pctMax = (maxV / maxVal) * 100;
+    fillEl.style.left = pctMin + '%';
+    fillEl.style.width = (pctMax - pctMin) + '%';
+
+    const isUnlimMax = maxV >= maxVal;
+    const isUnlimMin = minV >= maxVal;
+
+    minLbl.textContent = labelTransform ? labelTransform(minV, false) : minV;
+    maxLbl.textContent = isUnlimMax ? '∞' : (labelTransform ? labelTransform(maxV, true) : maxV + ' ' + unit);
+
+    if (badge) {
+      badge.style.opacity = isUnlimMax ? '1' : '0.3';
+    }
+
+    return { min: minV, max: isUnlimMax ? 999999 : maxV };
+  }
+
+  minEl.addEventListener('input', function() {
+    const v = update.call(minEl);
+    Object.assign(state[minId.split('-')[0] === 'budget' ? 'budget' : minId.split('-')[0] === 'inet' ? 'inet' : minId.split('-')[0] === 'min' ? 'minutes' : 'sms'], v);
+    renderCards();
+  });
+  maxEl.addEventListener('input', function() {
+    const v = update.call(maxEl);
+    Object.assign(state[minId.split('-')[0] === 'budget' ? 'budget' : minId.split('-')[0] === 'inet' ? 'inet' : minId.split('-')[0] === 'min' ? 'minutes' : 'sms'], v);
+    renderCards();
+  });
+
+  update.call(maxEl);
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ СЛАЙДЕРОВ =====
+setupSlider('budget-min','budget-max','budget-fill','budget-min-label','budget-max-label',3000,'₽',null,3000,(v,isMax) => v + (isMax ? ' ₽' : ''));
+setupSlider('inet-min','inet-max','inet-fill','inet-min-label','inet-max-label',50,'ГБ','inet-unlim-badge',50,(v,isMax) => isMax && v>=50 ? '∞' : v + ' ГБ');
+setupSlider('min-min','min-max','min-fill','min-min-label','min-max-label',2000,'мин','min-unlim-badge',2000,(v,isMax) => isMax && v>=2000 ? '∞' : v + ' мин');
+setupSlider('sms-min','sms-max','sms-fill','sms-min-label','sms-max-label',1200,'SMS','sms-unlim-badge',1200,(v,isMax) => isMax && v>=1200 ? '∞' : v + ' SMS');
+
+// Инициализируем правильно заполненные fill при загрузке
+function initFill(minId, maxId, fillId, maxVal) {
+  const minEl = document.getElementById(minId);
+  const maxEl = document.getElementById(maxId);
+  const fillEl = document.getElementById(fillId);
+  const pctMin = (parseInt(minEl.value) / maxVal) * 100;
+  const pctMax = (parseInt(maxEl.value) / maxVal) * 100;
+  fillEl.style.left = pctMin + '%';
+  fillEl.style.width = (pctMax - pctMin) + '%';
+}
+initFill('budget-min','budget-max','budget-fill',3000);
+initFill('inet-min','inet-max','inet-fill',50);
+initFill('min-min','min-max','min-fill',2000);
+initFill('sms-min','sms-max','sms-fill',1200);
+
+// ===== ОПЕРАТОРЫ =====
+document.querySelectorAll('.op-toggle').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const op = this.dataset.op;
+    if (state.operators.has(op)) {
+      state.operators.delete(op);
+      this.classList.remove('active');
+    } else {
+      state.operators.add(op);
+      this.classList.add('active');
+    }
+    renderCards();
+  });
+});
+
+// ===== СЕРВИСЫ =====
+document.querySelectorAll('.service-check').forEach(cb => {
+  cb.addEventListener('change', function() {
+    if (this.checked) state.services.add(this.value);
+    else state.services.delete(this.value);
+    renderCards();
+  });
+});
+
+// ===== СОРТИРОВКА =====
+document.getElementById('sort-price').addEventListener('click', function() {
+  state.sort = 'price';
+  this.classList.add('active');
+  document.getElementById('sort-inet').classList.remove('active');
+  renderCards();
+});
+document.getElementById('sort-inet').addEventListener('click', function() {
+  state.sort = 'inet';
+  this.classList.add('active');
+  document.getElementById('sort-price').classList.remove('active');
+  renderCards();
+});
+
+// ===== ЦВЕТА ОПЕРАТОРОВ =====
+const OP_META = {
+  'МТС':    { color: '#e8384a', bg: 'rgba(232,56,74,0.12)',  border: 'rgba(232,56,74,0.3)',  letter: 'M',  cls: 'card-mts' },
+  'Билайн': { color: '#f5c200', bg: 'rgba(245,194,0,0.12)', border: 'rgba(245,194,0,0.3)', letter: 'B',  cls: 'card-beeline' },
+  'Tele2':  { color: '#c0c0c0', bg: 'rgba(192,192,192,0.1)', border: 'rgba(192,192,192,0.25)', letter: 'T2', cls: 'card-tele2' },
+  'Мегафон':{ color: '#28c840', bg: 'rgba(40,200,64,0.12)', border: 'rgba(40,200,64,0.3)',  letter: 'M',  cls: 'card-megafon' },
+  'Yota':   { color: '#4f8ef7', bg: 'rgba(79,142,247,0.12)', border: 'rgba(79,142,247,0.3)', letter: 'Y',  cls: 'card-yota' },
+};
+
+function formatInet(v) { return v >= 50 ? '<span style="color:#7eb8ff">∞ ГБ</span>' : v + ' ГБ'; }
+function formatMin(v) { return v >= 2000 ? '<span style="color:#fde047">∞ мин</span>' : v + ' мин'; }
+function formatSms(v) { return v >= 1200 ? '<span style="color:#f9a8d4">∞ SMS</span>' : v + ' SMS'; }
+
+function serviceIcons(t) {
+  const icons = [];
+  if (t.messengers) icons.push('<i class="fa-brands fa-telegram" title="Мессенджеры" style="color:#4f8ef7"></i>');
+  if (t.social) icons.push('<i class="fa-brands fa-vk" title="Соцсети" style="color:#5b7dab"></i>');
+  if (t.video) icons.push('<i class="fa-brands fa-youtube" title="Видео" style="color:#e8384a"></i>');
+  if (t.music) icons.push('<i class="fa-solid fa-music" title="Музыка" style="color:#22c55e"></i>');
+  return icons.join(' ');
+}
+
+// ===== РЕНДЕР КАРТОЧКИ =====
+function createCard(t, delay) {
+  const meta = OP_META[t.op];
+  const inCompare = compareList.includes(t.id);
+  return `
+  <div class="tariff-card ${meta.cls}" style="animation-delay:${delay}ms">
+    <!-- Хедер карточки -->
+    <div class="flex items-start justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
+             style="background:${meta.bg};border:1.5px solid ${meta.border};color:${meta.color}">
+          ${meta.letter}
+        </div>
+        <div>
+          <div class="text-xs font-semibold mb-0.5" style="color:${meta.color}">${t.op}</div>
+          <div class="text-white font-display font-bold text-sm leading-tight">${t.name}</div>
+        </div>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <div class="price-tag text-2xl text-white">${t.price}<span class="text-sm text-gray-400 font-normal">₽</span></div>
+        <div class="text-xs text-gray-500">в месяц</div>
+      </div>
+    </div>
+
+    <!-- Параметры -->
+    <div class="space-y-0 mb-4 rounded-xl p-3" style="background:rgba(255,255,255,0.03);">
+      <div class="param-row">
+        <i class="fa-solid fa-wifi text-green-400 text-xs w-4"></i>
+        <span class="text-gray-400 text-xs flex-1">Интернет</span>
+        <span class="text-sm font-semibold text-white">${formatInet(t.inet)}</span>
+      </div>
+      <div class="param-row">
+        <i class="fa-solid fa-phone text-yellow-400 text-xs w-4"></i>
+        <span class="text-gray-400 text-xs flex-1">Минуты</span>
+        <span class="text-sm font-semibold text-white">${formatMin(t.minutes)}</span>
+      </div>
+      <div class="param-row">
+        <i class="fa-solid fa-comment-sms text-pink-400 text-xs w-4"></i>
+        <span class="text-gray-400 text-xs flex-1">SMS</span>
+        <span class="text-sm font-semibold text-white">${formatSms(t.sms)}</span>
+      </div>
+    </div>
+
+    <!-- Безлимиты на сервисы -->
+    ${(t.messengers || t.social || t.video || t.music) ? `
+    <div class="flex items-center gap-2 mb-4">
+      <span class="text-xs text-gray-500">Безлимит:</span>
+      <div class="flex gap-2 text-sm">${serviceIcons(t)}</div>
+    </div>` : '<div class="mb-4 text-xs text-gray-600">Без доп. безлимитов</div>'}
+
+    <!-- Кнопки -->
+    <div class="flex gap-2 mt-auto">
+      <button class="btn-card btn-details flex-1" onclick="showDetails(${t.id})">
+        Подробнее
+      </button>
+      <button class="btn-card btn-compare ${inCompare ? 'in-compare' : ''}" id="compare-btn-${t.id}" onclick="toggleCompare(${t.id}, this)">
+        <i class="fa-solid fa-${inCompare ? 'check' : 'plus'} text-xs mr-1"></i>
+        ${inCompare ? 'В сравнении' : 'Сравнить'}
+      </button>
+    </div>
+  </div>`;
+}
+
+// ===== РЕНДЕР ВСЕХ КАРТОЧЕК =====
+function renderCards() {
+  // Получаем актуальные значения слайдеров
+  state.budget.min = parseInt(document.getElementById('budget-min').value);
+  state.budget.max = parseInt(document.getElementById('budget-max').value);
+  if (state.budget.max >= 3000) state.budget.max = 999999;
+
+  state.inet.min = parseInt(document.getElementById('inet-min').value);
+  state.inet.max = parseInt(document.getElementById('inet-max').value);
+  if (state.inet.max >= 50) state.inet.max = 999999;
+
+  state.minutes.min = parseInt(document.getElementById('min-min').value);
+  state.minutes.max = parseInt(document.getElementById('min-max').value);
+  if (state.minutes.max >= 2000) state.minutes.max = 999999;
+
+  state.sms.min = parseInt(document.getElementById('sms-min').value);
+  state.sms.max = parseInt(document.getElementById('sms-max').value);
+  if (state.sms.max >= 1200) state.sms.max = 999999;
+
+  let filtered = TARIFFS.filter(t => {
+    if (t.price < state.budget.min || t.price > state.budget.max) return false;
+    if (t.inet < state.inet.min || t.inet > state.inet.max) return false;
+    if (t.minutes < state.minutes.min || t.minutes > state.minutes.max) return false;
+    if (t.sms < state.sms.min || t.sms > state.sms.max) return false;
+    if (!state.operators.has(t.op)) return false;
+    for (const s of state.services) {
+      if (!t[s]) return false;
+    }
+    return true;
+  });
+
+  // Сортировка
+  if (state.sort === 'price') filtered.sort((a,b) => a.price - b.price);
+  else filtered.sort((a,b) => b.inet - a.inet);
+
+  const grid = document.getElementById('tariff-grid');
+  const noRes = document.getElementById('no-results');
+  document.getElementById('result-count').textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    noRes.classList.remove('hidden');
+  } else {
+    noRes.classList.add('hidden');
+    grid.innerHTML = filtered.map((t, i) => createCard(t, i * 40)).join('');
+  }
+}
+
+// ===== СРАВНЕНИЕ =====
+function toggleCompare(id, btn) {
+  const idx = compareList.indexOf(id);
+  if (idx > -1) {
+    compareList.splice(idx, 1);
+    btn.classList.remove('in-compare');
+    btn.innerHTML = '<i class="fa-solid fa-plus text-xs mr-1"></i>Сравнить';
+    showToast('Тариф убран из сравнения', false);
+  } else {
+    if (compareList.length >= 2) {
+      showToast('Можно выбрать не более 2 тарифов', true);
+      return;
+    }
+    compareList.push(id);
+    btn.classList.add('in-compare');
+    btn.innerHTML = '<i class="fa-solid fa-check text-xs mr-1"></i>В сравнении';
+    showToast('Тариф добавлен в сравнение', false);
+  }
+  localStorage.setItem('compareList', JSON.stringify(compareList));
+  updateCompareCounter();
+}
+
+function updateCompareCounter() {
+  const counter = document.getElementById('compare-counter');
+  document.getElementById('compare-count').textContent = compareList.length;
+  if (compareList.length > 0) {
+    counter.classList.remove('hidden');
+    counter.classList.add('flex');
+  } else {
+    counter.classList.add('hidden');
+    counter.classList.remove('flex');
+  }
+}
+
+let toastTimeout;
+function showToast(msg, isError) {
+  const toast = document.getElementById('compare-toast');
+  document.getElementById('toast-text').textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) scale(1)';
+  toast.classList.remove('pointer-events-none');
+  if (isError) toast.querySelector('div').style.borderColor = 'rgba(239,68,68,0.4)';
+  else toast.querySelector('div').style.borderColor = 'rgba(79,142,247,0.3)';
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) scale(0.95)';
+    toast.classList.add('pointer-events-none');
+  }, 2500);
+}
+
+// ===== ПОДРОБНЕЕ (простой модал) =====
+function showDetails(id) {
+  const t = TARIFFS.find(x => x.id === id);
+  if (!t) return;
+  alert(`${t.name}\n\nОператор: ${t.op}\nЦена: ${t.price} ₽/мес\nИнтернет: ${t.inet >= 50 ? 'Безлимит' : t.inet + ' ГБ'}\nМинуты: ${t.minutes >= 2000 ? 'Безлимит' : t.minutes + ' мин'}\nSMS: ${t.sms >= 1200 ? 'Безлимит' : t.sms}\n\n${t.desc}`);
+}
+
+// ===== СБРОС ФИЛЬТРОВ =====
+document.getElementById('reset-btn').addEventListener('click', function() {
+  document.getElementById('budget-min').value = 0;
+  document.getElementById('budget-max').value = 3000;
+  document.getElementById('inet-min').value = 0;
+  document.getElementById('inet-max').value = 50;
+  document.getElementById('min-min').value = 0;
+  document.getElementById('min-max').value = 2000;
+  document.getElementById('sms-min').value = 0;
+  document.getElementById('sms-max').value = 1200;
+
+  ['budget','inet','min','sms'].forEach(id => {
+    const s = id === 'budget' ? 3000 : id === 'inet' ? 50 : id === 'min' ? 2000 : 1200;
+    initFill(id+'-min', id+'-max', id+'-fill', s);
+  });
+
+  // Обновляем лейблы
+  document.getElementById('budget-min-label').textContent = '0';
+  document.getElementById('budget-max-label').textContent = '3000 ₽';
+  document.getElementById('inet-min-label').textContent = '0';
+  document.getElementById('inet-max-label').textContent = '∞';
+  document.getElementById('min-min-label').textContent = '0';
+  document.getElementById('min-max-label').textContent = '∞';
+  document.getElementById('sms-min-label').textContent = '0';
+  document.getElementById('sms-max-label').textContent = '∞';
+
+  document.querySelectorAll('.service-check').forEach(cb => cb.checked = false);
+  state.services.clear();
+
+  state.operators = new Set(['МТС','Билайн','Tele2','Мегафон','Yota']);
+  document.querySelectorAll('.op-toggle').forEach(btn => btn.classList.add('active'));
+
+  renderCards();
+});
+
+// ===== МОБИЛЬНЫЕ ФИЛЬТРЫ =====
+document.getElementById('filter-btn').addEventListener('click', function() {
+  document.getElementById('mobile-filter-overlay').classList.remove('hidden');
+  // Клонируем содержимое фильтров
+  const sidebar = document.querySelector('#filter-sidebar > div').cloneNode(true);
+  document.getElementById('mobile-filter-content').innerHTML = '';
+  document.getElementById('mobile-filter-content').appendChild(sidebar);
+});
+document.getElementById('filter-overlay-bg').addEventListener('click', function() {
+  document.getElementById('mobile-filter-overlay').classList.add('hidden');
+});
+document.getElementById('close-filter').addEventListener('click', function() {
+  document.getElementById('mobile-filter-overlay').classList.add('hidden');
+});
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+updateCompareCounter();
+renderCards();
+</script>
+</body>
+</html>

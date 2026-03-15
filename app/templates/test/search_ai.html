@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-подбор тарифа — ТарифМатч</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #050d1a;
+  --border: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-deep);
+  background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: #e8eaf6;
+  min-height: 100vh;
+}
+h1,h2,h3,.font-display { font-family: 'Syne', sans-serif; }
+
+nav {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: rgba(5,13,26,0.85);
+  border-bottom: 1px solid var(--border);
+}
+
+.glass {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ===== Шаг индикатор ===== */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 0 4px;
+}
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: 'Syne', sans-serif;
+}
+.step-line-seg {
+  flex: 1; height: 2px; min-width: 20px; max-width: 60px;
+  transition: background 0.4s;
+}
+.step-dot.pending {
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.12);
+  color: #4a5568;
+}
+.step-dot.active {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border: none;
+  color: white;
+  box-shadow: 0 0 20px rgba(124,58,237,0.5);
+}
+.step-dot.done {
+  background: linear-gradient(135deg, #4f8ef7, #6b6ef5);
+  border: none;
+  color: white;
+}
+.step-line-seg.done { background: linear-gradient(90deg, #4f8ef7, #a78bfa); }
+.step-line-seg.pending { background: rgba(255,255,255,0.06); }
+
+/* ===== Быстрые выборы ===== */
+.option-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.25s;
+  font-size: 0.88rem;
+  color: #c0c8e0;
+  user-select: none;
+  white-space: nowrap;
+}
+.option-chip:hover {
+  border-color: rgba(124,58,237,0.4);
+  background: rgba(124,58,237,0.08);
+  color: #e0d4ff;
+}
+.option-chip.selected {
+  border-color: rgba(167,139,250,0.6);
+  background: rgba(124,58,237,0.15);
+  color: #e0d4ff;
+}
+.option-chip.selected::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  flex-shrink: 0;
+}
+
+/* ===== Текстовое поле ===== */
+.ai-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  color: #e8eaf6;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  padding: 16px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  line-height: 1.6;
+}
+.ai-textarea:focus {
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1), 0 0 20px rgba(124,58,237,0.08);
+}
+.ai-textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+/* ===== Кнопка AI ===== */
+.btn-ai {
+  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #ec4899 100%);
+  color: #fff;
+  border-radius: 14px;
+  padding: 16px 40px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.35);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+.btn-ai:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 16px 48px rgba(124,58,237,0.5);
+}
+.btn-ai:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Анимация загрузки ===== */
+#loading-screen {
+  display: none;
+}
+#loading-screen.show {
+  display: flex;
+}
+
+@keyframes orb-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+@keyframes thinking-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+@keyframes scan-line {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.orb-container {
+  position: relative;
+  width: 120px; height: 120px;
+  margin: 0 auto;
+}
+.orb-main {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(167,139,250,0.6) 0%, rgba(124,58,237,0.3) 40%, rgba(79,142,247,0.2) 70%, transparent 100%);
+  animation: orb-pulse 2s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+.orb-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: rgba(167,139,250,0.6);
+  border-right-color: rgba(79,142,247,0.3);
+  animation: orb-spin 2s linear infinite;
+}
+.orb-ring-2 {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-bottom-color: rgba(236,72,153,0.4);
+  border-left-color: rgba(167,139,250,0.2);
+  animation: orb-spin 3s linear infinite reverse;
+}
+.orb-scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(167,139,250,0.3), transparent);
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+.thinking-dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: thinking-dot 1.4s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* Фразы анализа */
+.analysis-text {
+  animation: fadeText 0.5s ease;
+}
+@keyframes fadeText {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Результаты ===== */
+#results-section {
+  display: none;
+  animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#results-section.show { display: block; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Медаль места */
+.medal-1 { background: linear-gradient(135deg, #ffd700, #f59e0b); }
+.medal-2 { background: linear-gradient(135deg, #c0c0c0, #94a3b8); }
+.medal-3 { background: linear-gradient(135deg, #cd7f32, #a16207); }
+
+/* Карточка результата */
+.result-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.result-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(124,58,237,0.25);
+  background: rgba(255,255,255,0.06);
+}
+
+/* Объяснение AI */
+.ai-reason {
+  background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(167,139,250,0.05));
+  border: 1px solid rgba(167,139,250,0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: #c4b5fd;
+  line-height: 1.5;
+}
+.ai-reason::before {
+  content: '✦ ';
+  color: #a78bfa;
+  font-size: 0.7rem;
+}
+
+/* Match score бар */
+.match-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.match-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 0%;
+}
+
+/* Перекрытие секций */
+.section-panel {
+  transition: all 0.4s ease;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+
+.ai-gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #ec4899, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa, #ec4899, #a78bfa, #7c3aed);
+  background-size: 300% 100%;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== НАВИГАЦИЯ ===== -->
+<nav class="sticky top-0 z-50">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    <div class="flex items-center justify-between h-14">
+      <a href="index.html" class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs">TM</div>
+        <span class="font-display font-bold text-white">Тариф<span style="color:#4f8ef7">Матч</span></span>
+      </a>
+      <a href="search.html" class="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1.5">
+        <i class="fa-solid fa-sliders text-xs"></i> Обычный поиск
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+
+  <!-- ===== ФОРМА ВОПРОСОВ ===== -->
+  <div id="form-section" class="section-panel">
+
+    <!-- Заголовок -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass">
+        <i class="fa-solid fa-wand-magic-sparkles text-violet-400 text-sm"></i>
+        <span class="text-violet-300 text-sm font-semibold">AI-подбор тарифа</span>
+      </div>
+      <h1 class="font-display text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
+        Расскажи, как ты<br>
+        <span class="shimmer-text">пользуешься телефоном</span>
+      </h1>
+      <p class="text-gray-400 text-base max-w-lg mx-auto">
+        Ответь на несколько вопросов и AI подберёт идеальный тариф именно для тебя
+      </p>
+    </div>
+
+    <!-- Шаги -->
+    <div class="step-indicator mb-10 justify-center">
+      <div class="step-dot active" id="sd-1">1</div>
+      <div class="step-line-seg pending" id="sl-1"></div>
+      <div class="step-dot pending" id="sd-2">2</div>
+      <div class="step-line-seg pending" id="sl-2"></div>
+      <div class="step-dot pending" id="sd-3">3</div>
+      <div class="step-line-seg pending" id="sl-3"></div>
+      <div class="step-dot pending" id="sd-4">4</div>
+    </div>
+
+    <!-- ===== ВОПРОС 1: Бюджет ===== -->
+    <div class="glass rounded-2xl p-6 sm:p-8 mb-5" id="q1" style="border-radius:20px;">
+      <div class="flex items-start gap-3 mb-5">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">1</div>
+        <div>
+          <h3 class="font-display font-bold text-white text-lg">Какой у тебя бюджет?</h3>
+          <p class="text-gray-500 text-sm mt-0.5">Максимальная сумма в месяц</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2" id="budget-chips">
+        <div class="option-chip" data-group="budget" data-value="299" onclick="selectChip(this, 'budget')">
+          <i class="fa-solid fa-piggy-bank text-xs"></i> До 300 ₽
+        </div>
+        <div class="option-chip" data-group="budget" data-value="499" onclick="selectChip(this, 'budget')">
+          До 500 ₽
+        </div>
+        <div class="option-chip" data-group="budget" data-value="749" onclick="selectChip(this, 'budget')">
+          До 750 ₽
+        </div>
+        <div class="option-chip" data-group="budget" data-value="999" onclick="selectChip(this, 'budget')">
+          До 1000 ₽
+        </div>
+        <div class="option-chip" data-group="budget" data-value="9999" onclick="selectChip(this, 'budget')">
+          <i class="fa-solid fa-star text-xs text-yellow-400"></i> Не важно
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ВОПРОС 2: Интернет ===== -->
+    <div class="glass rounded-2xl p-6 sm:p-8 mb-5" id="q2" style="border-radius:20px;">
+      <div class="flex items-start gap-3 mb-5">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);color:#7eb8ff;">2</div>
+        <div>
+          <h3 class="font-display font-bold text-white text-lg">Сколько интернета нужно?</h3>
+          <p class="text-gray-500 text-sm mt-0.5">Примерно в месяц</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div class="option-chip" data-group="inet" data-value="3" onclick="selectChip(this, 'inet')">
+          <i class="fa-solid fa-wifi text-xs text-green-400"></i> Мало (до 5 ГБ)
+        </div>
+        <div class="option-chip" data-group="inet" data-value="15" onclick="selectChip(this, 'inet')">
+          Средне (10–20 ГБ)
+        </div>
+        <div class="option-chip" data-group="inet" data-value="30" onclick="selectChip(this, 'inet')">
+          Много (30–40 ГБ)
+        </div>
+        <div class="option-chip" data-group="inet" data-value="50" onclick="selectChip(this, 'inet')">
+          <i class="fa-solid fa-infinity text-xs"></i> Безлимит
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ВОПРОС 3: Образ жизни ===== -->
+    <div class="glass rounded-2xl p-6 sm:p-8 mb-5" id="q3" style="border-radius:20px;">
+      <div class="flex items-start gap-3 mb-5">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3);color:#f9a8d4;">3</div>
+        <div>
+          <h3 class="font-display font-bold text-white text-lg">Чем пользуешься чаще всего?</h3>
+          <p class="text-gray-500 text-sm mt-0.5">Можно выбрать несколько</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div class="option-chip multi" data-group="services" data-value="messengers" onclick="toggleMulti(this)">
+          <i class="fa-brands fa-telegram text-xs text-blue-400"></i> Мессенджеры
+        </div>
+        <div class="option-chip multi" data-group="services" data-value="social" onclick="toggleMulti(this)">
+          <i class="fa-brands fa-vk text-xs text-blue-500"></i> Соцсети
+        </div>
+        <div class="option-chip multi" data-group="services" data-value="video" onclick="toggleMulti(this)">
+          <i class="fa-brands fa-youtube text-xs text-red-500"></i> YouTube/Видео
+        </div>
+        <div class="option-chip multi" data-group="services" data-value="music" onclick="toggleMulti(this)">
+          <i class="fa-solid fa-music text-xs text-green-400"></i> Музыка
+        </div>
+        <div class="option-chip" data-group="calls" data-value="много" onclick="selectChip(this, 'calls')">
+          <i class="fa-solid fa-phone text-xs text-yellow-400"></i> Много звоню
+        </div>
+        <div class="option-chip" data-group="calls" data-value="мало" onclick="selectChip(this, 'calls')">
+          <i class="fa-solid fa-phone-slash text-xs text-gray-500"></i> Редко звоню
+        </div>
+      </div>
+    </div>
+
+    <div class="glass rounded-2xl p-6 sm:p-8 mb-8" id="q4" style="border-radius:20px;">
+      <div class="flex items-start gap-3 mb-5">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#86efac;">4</div>
+        <div>
+          <h3 class="font-display font-bold text-white text-lg">Расскажи своими словами</h3>
+          <p class="text-gray-500 text-sm mt-0.5">Необязательно — но поможет AI точнее подобрать</p>
+        </div>
+      </div>
+      <textarea
+        id="free-text"
+        class="ai-textarea"
+        rows="4"
+        placeholder="Например: «Работаю в разъездах, много говорю по телефону, смотрю видео в метро, бюджет ограничен...»"
+      ></textarea>
+      <p class="text-gray-600 text-xs mt-2">
+        <i class="fa-solid fa-shield-halved mr-1"></i>
+        AI анализирует твои ответы локально — никуда не отправляет
+      </p>
+    </div>
+
+    <button id="find-btn" class="btn-ai" onclick="startAISearch()">
+      <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+      Найти идеальный тариф с ИИ
+      <i class="fa-solid fa-arrow-right text-sm"></i>
+    </button>
+  </div>
+
+  <div id="loading-screen" class="flex-col items-center justify-center py-20 text-center section-panel">
+    <div class="orb-container mb-8">
+      <div class="orb-ring"></div>
+      <div class="orb-ring-2"></div>
+      <div class="orb-main">
+        <div class="orb-scan"></div>
+      </div>
+    </div>
+
+    <h2 class="font-display text-2xl font-bold text-white mb-3">AI анализирует данные</h2>
+    <p id="loading-text" class="text-gray-400 mb-6 analysis-text">Обрабатываю твои предпочтения...</p>
+
+    <div class="thinking-dots flex items-center justify-center gap-2 mb-8">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="w-64 h-1 rounded-full mx-auto" style="background:rgba(255,255,255,0.06);">
+      <div id="progress-bar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div>
+    </div>
+    <p id="progress-label" class="text-xs text-gray-600 mt-2">0%</p>
+  </div>
+
+  <div id="results-section">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass">
+        <i class="fa-solid fa-check text-green-400 text-sm"></i>
+        <span class="text-green-300 text-sm font-semibold">Анализ завершён</span>
+      </div>
+      <h2 class="font-display text-3xl font-bold text-white mb-2">Топ-3 тарифа для тебя</h2>
+      <p class="text-gray-400 text-sm" id="results-subtitle">На основе твоих предпочтений AI отобрал лучшие варианты</p>
+    </div>
+
+    <div id="results-list" class="space-y-4 mb-8"></div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button onclick="resetSearch()" class="flex-1 py-3.5 rounded-2xl font-display font-bold text-gray-300 transition-all" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fa-solid fa-rotate-left mr-2 text-sm"></i>Начать заново
+      </button>
+      <a href="search.html" class="flex-1 py-3.5 rounded-2xl font-display font-bold text-center transition-all flex items-center justify-center gap-2" style="background:linear-gradient(135deg,#4f8ef7,#6b6ef5);color:white;box-shadow:0 4px 20px rgba(79,142,247,0.25);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <i class="fa-solid fa-sliders text-sm"></i>Посмотреть все тарифы
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+const TARIFFS = [
+  { id:1,  name:'МТС Smart Стартовый',     op:'МТС',    price:299,  inet:5,  minutes:200,  sms:50,   messengers:false, social:false, video:false, music:false },
+  { id:2,  name:'МТС Smart Продвинутый',   op:'МТС',    price:499,  inet:15, minutes:400,  sms:100,  messengers:true,  social:false, video:false, music:false },
+  { id:3,  name:'МТС Smart Безлимит',      op:'МТС',    price:799,  inet:50, minutes:2000, sms:1200, messengers:true,  social:true,  video:false, music:true  },
+  { id:4,  name:'МТС Premium',             op:'МТС',    price:1299, inet:50, minutes:2000, sms:1200, messengers:true,  social:true,  video:true,  music:true  },
+  { id:5,  name:'Билайн Живи',             op:'Билайн', price:399,  inet:8,  minutes:300,  sms:0,    messengers:true,  social:false, video:false, music:false },
+  { id:6,  name:'Билайн Живи +',           op:'Билайн', price:599,  inet:20, minutes:600,  sms:100,  messengers:true,  social:true,  video:false, music:false },
+  { id:7,  name:'Билайн Всё включено',     op:'Билайн', price:999,  inet:40, minutes:2000, sms:500,  messengers:true,  social:true,  video:true,  music:true  },
+  { id:8,  name:'Tele2 Мой разговор',      op:'Tele2',  price:249,  inet:3,  minutes:200,  sms:50,   messengers:false, social:false, video:false, music:false },
+  { id:9,  name:'Tele2 Мой онлайн',        op:'Tele2',  price:449,  inet:25, minutes:500,  sms:100,  messengers:true,  social:true,  video:false, music:false },
+  { id:10, name:'Tele2 Максимум',          op:'Tele2',  price:749,  inet:50, minutes:2000, sms:1200, messengers:true,  social:true,  video:true,  music:false },
+  { id:11, name:'Мегафон Включайся',       op:'Мегафон',price:329,  inet:6,  minutes:250,  sms:50,   messengers:false, social:false, video:false, music:false },
+  { id:12, name:'Мегафон Разговор',        op:'Мегафон',price:549,  inet:12, minutes:2000, sms:200,  messengers:true,  social:false, video:false, music:false },
+  { id:13, name:'Мегафон Интернет+',       op:'Мегафон',price:849,  inet:40, minutes:800,  sms:300,  messengers:true,  social:true,  video:false, music:true  },
+  { id:14, name:'Yota Базовый',            op:'Yota',   price:399,  inet:50, minutes:100,  sms:50,   messengers:true,  social:false, video:false, music:false },
+  { id:15, name:'Yota Полный',             op:'Yota',   price:699,  inet:50, minutes:1000, sms:200,  messengers:true,  social:true,  video:true,  music:true  },
+];
+
+const OP_META = {
+  'МТС':    { color:'#e8384a', bg:'rgba(232,56,74,0.12)',  border:'rgba(232,56,74,0.3)',  letter:'M'  },
+  'Билайн': { color:'#f5c200', bg:'rgba(245,194,0,0.12)', border:'rgba(245,194,0,0.3)', letter:'B'  },
+  'Tele2':  { color:'#c0c0c0', bg:'rgba(192,192,192,0.1)', border:'rgba(192,192,192,0.25)', letter:'T2' },
+  'Мегафон':{ color:'#28c840', bg:'rgba(40,200,64,0.12)', border:'rgba(40,200,64,0.3)',  letter:'M'  },
+  'Yota':   { color:'#4f8ef7', bg:'rgba(79,142,247,0.12)', border:'rgba(79,142,247,0.3)', letter:'Y'  },
+};
+
+// ===== СОСТОЯНИЕ =====
+const answers = {
+  budget: null,
+  inet: null,
+  services: new Set(),
+  calls: null,
+};
+
+let stepProgress = 0;
+
+// ===== ВЫБОР ЧИПОВ =====
+function selectChip(el, group) {
+  // Снять выбор с других в группе
+  document.querySelectorAll(`.option-chip[data-group="${group}"]`).forEach(c => {
+    if (!c.classList.contains('multi')) c.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  answers[group] = el.dataset.value;
+  updateStepIndicator();
+}
+
+function toggleMulti(el) {
+  el.classList.toggle('selected');
+  const val = el.dataset.value;
+  if (el.classList.contains('selected')) answers.services.add(val);
+  else answers.services.delete(val);
+}
+
+// ===== ОБНОВЛЕНИЕ ШАГОВ =====
+function updateStepIndicator() {
+  const steps = [
+    answers.budget !== null,
+    answers.inet !== null,
+    answers.services.size > 0 || answers.calls !== null,
+    false, // Текст — не обязательный
+  ];
+
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('sd-' + (i+1));
+    if (steps[i]) {
+      dot.classList.remove('pending', 'active');
+      dot.classList.add('done');
+      dot.innerHTML = '<i class="fa-solid fa-check" style="font-size:11px"></i>';
+    } else if (!steps.slice(0, i).some(s => !s)) {
+      dot.classList.remove('pending', 'done');
+      dot.classList.add('active');
+      dot.textContent = i + 1;
+    }
+    if (i < 3) {
+      const line = document.getElementById('sl-' + (i+1));
+      line.classList.toggle('done', steps[i]);
+      line.classList.toggle('pending', !steps[i]);
+    }
+  }
+}
+
+// ===== СКОРИНГ ТАРИФОВ =====
+function scoreTariff(t) {
+  let score = 0;
+
+  // Бюджет
+  if (answers.budget) {
+    const maxPrice = parseInt(answers.budget);
+    if (t.price <= maxPrice) score += 30;
+    else if (t.price <= maxPrice * 1.2) score += 15;
+    else score -= 20;
+  }
+
+  // Интернет
+  if (answers.inet) {
+    const neededInet = parseInt(answers.inet);
+    if (t.inet >= neededInet) score += 25;
+    else if (t.inet >= neededInet * 0.6) score += 10;
+    else score -= 15;
+  }
+
+  // Сервисы
+  for (const s of answers.services) {
+    if (t[s]) score += 10;
+    else score -= 5;
+  }
+
+  // Звонки
+  if (answers.calls === 'много') {
+    if (t.minutes >= 2000) score += 20;
+    else if (t.minutes >= 500) score += 10;
+    else score -= 10;
+  } else if (answers.calls === 'мало') {
+    if (t.minutes <= 300) score += 5;
+    score += Math.max(0, 10 - t.price / 100);
+  }
+
+  // Бонус за доп. безлимиты если выбрали сервисы
+  if (answers.services.size > 0 && t.messengers && t.social) score += 8;
+
+  return score;
+}
+
+function generateReasons(t, rank) {
+  const reasons = [];
+
+  if (answers.budget && t.price <= parseInt(answers.budget)) {
+    reasons.push(`Вписывается в бюджет — ${t.price} ₽/мес`);
+  }
+  if (answers.inet) {
+    const neededInet = parseInt(answers.inet);
+    if (t.inet >= 50) reasons.push('Безлимитный интернет — никаких ограничений');
+    else if (t.inet >= neededInet) reasons.push(`${t.inet} ГБ интернета — ровно столько сколько нужно`);
+  }
+  if (answers.services.has('messengers') && t.messengers) reasons.push('Безлимит на мессенджеры входит в тариф');
+  if (answers.services.has('social') && t.social) reasons.push('Соцсети без учёта трафика');
+  if (answers.services.has('video') && t.video) reasons.push('YouTube и видео без ограничений');
+  if (answers.services.has('music') && t.music) reasons.push('Безлимитная музыка в подарок');
+  if (answers.calls === 'много' && t.minutes >= 2000) reasons.push('Безлимитные звонки — говори сколько угодно');
+  if (answers.calls === 'мало' && t.minutes <= 300) reasons.push('Минуты есть, но переплачивать за них не придётся');
+
+  if (reasons.length === 0) {
+    reasons.push('Оптимальный баланс цены и возможностей');
+  }
+
+  return reasons.slice(0, 2).join('. ') + '.';
+}
+
+// ===== ЗАПУСК AI ПОИСКА =====
+function startAISearch() {
+  // Скрываем форму
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('loading-screen').classList.add('show');
+
+  // Анимация прогресса
+  const texts = [
+    'Обрабатываю твои предпочтения...',
+    'Анализирую 15 тарифов...',
+    'Проверяю совместимость с выбранными сервисами...',
+    'Рассчитываю выгоду для каждого варианта...',
+    'Формирую персональные рекомендации...',
+  ];
+
+  let progress = 0;
+  let textIdx = 0;
+
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  const loadingText = document.getElementById('loading-text');
+
+  const interval = setInterval(() => {
+    progress += Math.random() * 22 + 8;
+    if (progress > 100) progress = 100;
+
+    progressBar.style.width = progress + '%';
+    progressLabel.textContent = Math.round(progress) + '%';
+
+    if (textIdx < texts.length - 1 && progress > (textIdx + 1) * 20) {
+      textIdx++;
+      loadingText.style.animation = 'none';
+      void loadingText.offsetHeight;
+      loadingText.style.animation = 'fadeText 0.5s ease';
+      loadingText.textContent = texts[textIdx];
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        showResults();
+      }, 600);
+    }
+  }, 350);
+}
+
+function showResults() {
+  document.getElementById('loading-screen').classList.remove('show');
+
+  const scored = TARIFFS
+    .map(t => ({ ...t, score: scoreTariff(t) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+
+  const maxScore = scored[0].score;
+
+  if (answers.budget && answers.inet) {
+    document.getElementById('results-subtitle').textContent =
+      `Бюджет до ${answers.budget} ₽ · Интернет от ${answers.inet} ГБ · Оценено 15 тарифов`;
+  }
+
+  const medals = ['medal-1', 'medal-2', 'medal-3'];
+  const medalIcons = ['🥇', '🥈', '🥉'];
+  const matchPcts = [Math.round((scored[0].score / (maxScore || 1)) * 100), Math.round((scored[1].score / (maxScore || 1)) * 86), Math.round((scored[2].score / (maxScore || 1)) * 74)];
+  const matchPcts2 = [94, 81, 68];
+
+  const html = scored.map((t, i) => {
+    const meta = OP_META[t.op];
+    const reason = generateReasons(t, i + 1);
+    const match = Math.max(matchPcts2[i], 55);
+
+    const svcIcons = [
+      t.messengers && '<i class="fa-brands fa-telegram text-blue-400"></i>',
+      t.social && '<i class="fa-brands fa-vk text-blue-500"></i>',
+      t.video && '<i class="fa-brands fa-youtube text-red-500"></i>',
+      t.music && '<i class="fa-solid fa-music text-green-400"></i>',
+    ].filter(Boolean);
+
+    return `
+    <div class="result-card" style="animation-delay:${i * 150}ms;${i === 0 ? 'border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.05);' : ''}">
+      ${i === 0 ? '<div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" style="background:linear-gradient(90deg,#7c3aed,#a78bfa,#ec4899);"></div>' : ''}
+
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold ${medals[i]}" style="box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+          ${medalIcons[i]}
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <div>
+              <div class="text-xs font-semibold mb-0.5" style="color:${meta.color}">${t.op}</div>
+              <h3 class="font-display font-bold text-white text-base leading-tight">${t.name}</h3>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <div class="font-display font-black text-2xl text-white">${t.price}<span class="text-sm text-gray-400 font-normal">₽</span></div>
+              <div class="text-xs text-gray-500">в месяц</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
+            <span><i class="fa-solid fa-wifi text-green-400 mr-1"></i>${t.inet >= 50 ? '∞' : t.inet} ГБ</span>
+            <span><i class="fa-solid fa-phone text-yellow-400 mr-1"></i>${t.minutes >= 2000 ? '∞' : t.minutes} мин</span>
+            <span><i class="fa-solid fa-comment-sms text-pink-400 mr-1"></i>${t.sms >= 1200 ? '∞' : t.sms} SMS</span>
+            ${svcIcons.length > 0 ? `<span class="flex items-center gap-1">${svcIcons.join('')}</span>` : ''}
+          </div>
+
+          <div class="flex items-center gap-3 mb-3">
+            <div class="match-bar flex-1">
+              <div class="match-fill" data-pct="${match}" style="width:${match}%"></div>
+            </div>
+            <span class="text-xs font-bold whitespace-nowrap" style="color:#a78bfa">${match}% совпадение</span>
+          </div>
+
+          <div class="ai-reason">${reason}</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button onclick="addToCompare(${t.id})" class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all" style="background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);color:#7eb8ff;" onmouseover="this.style.background='rgba(79,142,247,0.2)'" onmouseout="this.style.background='rgba(79,142,247,0.1)'">
+          <i class="fa-solid fa-scale-balanced text-xs mr-1"></i>Сравнить
+        </button>
+        <a href="compare.html" class="flex-1 py-2 rounded-xl text-sm font-semibold text-center transition-all" style="background:rgba(124,58,237,0.12);border:1px solid rgba(167,139,250,0.2);color:#c4b5fd;" onmouseover="this.style.background='rgba(124,58,237,0.2)'" onmouseout="this.style.background='rgba(124,58,237,0.12)'">
+          <i class="fa-solid fa-arrow-right text-xs mr-1"></i>Открыть
+        </a>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('results-list').innerHTML = html;
+
+  const section = document.getElementById('results-section');
+  section.classList.add('show');
+
+  setTimeout(() => {
+    document.querySelectorAll('.match-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 300);
+}
+
+function addToCompare(id) {
+  let list = JSON.parse(localStorage.getItem('compareList') || '[]');
+  if (!list.includes(id)) {
+    if (list.length >= 2) list.shift();
+    list.push(id);
+    localStorage.setItem('compareList', JSON.stringify(list));
+  }
+  window.location.href = 'compare.html';
+}
+
+function resetSearch() {
+  answers.budget = null;
+  answers.inet = null;
+  answers.services.clear();
+  answers.calls = null;
+
+  document.querySelectorAll('.option-chip').forEach(c => c.classList.remove('selected'));
+
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('sd-' + i);
+    dot.classList.remove('done', 'active');
+    dot.classList.add(i === 1 ? 'active' : 'pending');
+    dot.textContent = i;
+  }
+  for (let i = 1; i <= 3; i++) {
+    const line = document.getElementById('sl-' + i);
+    line.classList.remove('done');
+    line.classList.add('pending');
+  }
+
+  document.getElementById('results-section').classList.remove('show');
+  document.getElementById('form-section').style.display = 'block';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
