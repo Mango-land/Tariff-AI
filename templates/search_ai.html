@@ -10,96 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
-  <style>
-
-.ai-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 68px); overflow: hidden; }
-
-.chat-side { display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border); }
-.chat-head { padding: 18px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.ai-ava { width: 42px; height: 42px; border-radius: 13px; background: var(--text); display: flex; align-items: center; justify-content: center; font-size: 17px; color: #fff; flex-shrink: 0; }
-.chat-head-info h3 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 800; margin-bottom: 2px; }
-.chat-head-info p { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.on-dot { width: 6px; height: 6px; background: #34c759; border-radius: 50%; animation: blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-.chat-msgs { flex: 1; overflow-y: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
-.chat-msgs::-webkit-scrollbar { width: 4px; }
-.chat-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-.msg { display: flex; gap: 10px; align-items: flex-start; animation: popIn .25s ease; }
-@keyframes popIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.msg-ava { width: 30px; height: 30px; border-radius: 9px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-.msg.ai .msg-ava { background: var(--text); color: #fff; border: none; font-size: 13px; }
-.msg-body { max-width: 80%; }
-.msg-bubble { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; border-top-left-radius: 3px; padding: 11px 15px; font-size: 14px; line-height: 1.6; color: var(--text); }
-.msg.user .msg-bubble { background: var(--text); color: #fff; border-color: var(--text); border-top-left-radius: 14px; border-top-right-radius: 3px; }
-.msg-time { font-size: 11px; color: var(--muted); margin-top: 4px; padding: 0 3px; }
-.msg.user .msg-time { text-align: right; }
-
-.qr-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-.qr {
-  padding: 7px 14px; border-radius: 100px;
-  border: 1.5px solid var(--border); background: var(--card);
-  color: var(--text); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  transition: all .15s;
-}
-.qr:hover { background: var(--text); color: #fff; border-color: var(--text); }
-
-.typing { display: none; align-items: flex-start; gap: 10px; }
-.typing-dots { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; border-top-left-radius: 3px; padding: 12px 16px; display: flex; gap: 5px; align-items: center; }
-.dot { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: bounce 1.2s infinite; }
-.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
-@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
-
-.chat-inp { padding: 14px 28px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; }
-.inp-field { flex: 1; background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; min-height: 46px; max-height: 120px; line-height: 1.5; transition: border-color .2s; overflow-y: auto; }
-.inp-field:focus { outline: none; border-color: var(--text); }
-.inp-field::placeholder { color: var(--muted); }
-.send-btn { width: 46px; height: 46px; border-radius: 12px; background: var(--text); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, transform .15s; flex-shrink: 0; }
-.send-btn:hover { background: var(--highlight); transform: scale(1.05); }
-.send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-
-.rec-side { display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
-.rec-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
-.rec-head h3 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 800; }
-.rec-badge { background: var(--text); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
-
-.rec-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; transition: border-color .18s, box-shadow .18s; animation: slideR .25s ease; }
-@keyframes slideR { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
-.rec-card:hover { border-color: var(--text); box-shadow: 0 4px 14px rgba(0,0,0,.07); }
-.rc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-.rc-op { display: flex; align-items: center; gap: 7px; }
-.rc-op-dot { width: 8px; height: 8px; border-radius: 50%; }
-.rc-op-name { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
-.rc-price { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; }
-.rc-price small { font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--muted); font-weight: 400; }
-.rc-name { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-.rc-specs { display: flex; gap: 12px; margin-bottom: 10px; font-size: 12px; color: var(--muted); }
-.rc-specs strong { color: var(--text); font-weight: 600; }
-.match-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.match-lbl { font-size: 11px; color: var(--muted); white-space: nowrap; }
-.match-track { flex: 1; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.match-bar { height: 100%; background: var(--highlight); border-radius: 3px; transition: width .7s ease; }
-.match-pct { font-size: 12px; font-weight: 700; color: var(--highlight); min-width: 32px; text-align: right; }
-.rc-actions { display: flex; gap: 8px; }
-.rc-btn-p { flex: 1; padding: 9px; background: var(--text); color: #fff; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s; }
-.rc-btn-p:hover { background: var(--highlight); }
-.rc-btn-s { padding: 9px 13px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all .15s; }
-.rc-btn-s:hover { border-color: var(--text); color: var(--text); }
-
-.empty-rec { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; color: var(--muted); }
-.empty-rec-icon { font-size: 44px; margin-bottom: 14px; opacity: .25; }
-.empty-rec-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 800; color: var(--text); opacity: .5; margin-bottom: 8px; }
-.empty-rec-desc { font-size: 13px; line-height: 1.5; }
-
-@media (max-width: 900px) {
-  nav { padding: 0 20px; } nav ul { display: none; }
-  .ai-layout { grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: auto; min-height: calc(100vh - 68px); overflow: visible; }
-  .rec-side { max-height: 360px; border-top: 1px solid var(--border); }
-  .chat-side { min-height: 55vh; }
-}
-</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/page/search_ai.css') }}">
 </head>
 <body>
   <nav>
@@ -114,7 +25,6 @@
   </nav>
 
 <div class="ai-layout">
-  <!-- CHAT -->
   <div class="chat-side">
     <div class="chat-head">
       <div class="ai-ava">✦</div>
@@ -150,7 +60,6 @@
     </div>
   </div>
 
-  <!-- REC SIDEBAR -->
   <div class="rec-side">
     <div class="rec-head">
       <h3>Рекомендации</h3>
@@ -166,134 +75,7 @@
   </div>
 </div>
 
-<script>
-const TARIFFS = [
-  {id:1, name:'Мой МТС',     op:'МТС',     c:'#e7011a', price:299,  gb:10,  min:200,  sms:50,  u:['messengers']},
-  {id:2, name:'МТС Smart',   op:'МТС',     c:'#e7011a', price:449,  gb:20,  min:300,  sms:100, u:['messengers','music']},
-  {id:3, name:'МТС Premium', op:'МТС',     c:'#e7011a', price:699,  gb:50,  min:1000, sms:500, u:['messengers','social','music','video']},
-  {id:4, name:'МТС Безлимит',op:'МТС',     c:'#e7011a', price:999,  gb:100, min:1000, sms:500, u:['messengers','social','music','video']},
-  {id:5, name:'Всё',         op:'Билайн',  c:'#222222', price:390,  gb:15,  min:300,  sms:50,  u:['social']},
-  {id:6, name:'Всё+ за 550', op:'Билайн',  c:'#222222', price:550,  gb:30,  min:600,  sms:100, u:['social','messengers']},
-  {id:7, name:'Много',       op:'Билайн',  c:'#222222', price:850,  gb:60,  min:1000, sms:200, u:['social','messengers','music']},
-  {id:8, name:'Мой разговор',op:'Теле2',   c:'#00b0e6', price:199,  gb:5,   min:100,  sms:0,   u:[]},
-  {id:9, name:'Мой онлайн',  op:'Теле2',   c:'#00b0e6', price:299,  gb:12,  min:200,  sms:50,  u:['messengers']},
-  {id:10,name:'Мой онлайн+', op:'Теле2',   c:'#00b0e6', price:499,  gb:30,  min:500,  sms:100, u:['messengers','video']},
-  {id:11,name:'Мой безлимит',op:'Теле2',   c:'#00b0e6', price:799,  gb:60,  min:1000, sms:200, u:['messengers','social','video','music']},
-  {id:12,name:'Включайся',   op:'МегаФон', c:'#009f6b', price:350,  gb:10,  min:200,  sms:100, u:['messengers']},
-  {id:13,name:'Слушай',      op:'МегаФон', c:'#009f6b', price:500,  gb:20,  min:400,  sms:150, u:['messengers','music']},
-  {id:14,name:'Смотри',      op:'МегаФон', c:'#009f6b', price:650,  gb:40,  min:600,  sms:200, u:['messengers','music','video']},
-  {id:15,name:'Говори',      op:'МегаФон', c:'#009f6b', price:900,  gb:70,  min:1000, sms:500, u:['messengers','music','video','social']},
-  {id:16,name:'Yota',        op:'Yota',    c:'#6c63ff', price:350,  gb:10,  min:200,  sms:50,  u:['messengers','social']},
-  {id:17,name:'Yota+',       op:'Yota',    c:'#6c63ff', price:500,  gb:25,  min:500,  sms:100, u:['messengers','social','music','video']},
-  {id:18,name:'Yota MAX',    op:'Yota',    c:'#6c63ff', price:750,  gb:100, min:1000, sms:500, u:['messengers','social','music','video']},
-];
+<script src="{{ url_for('static', filename='script/search_ai.js') }}"></script>
 
-let history = [], busy = false;
-
-const SYS = `Ты — умный помощник по подбору мобильных тарифов TariffAI.
-
-Доступные тарифы: ${JSON.stringify(TARIFFS)}
-unlimits: messengers=мессенджеры, social=соцсети, video=видеохостинги, music=музыка.
-
-Когда понял потребности, добавь в конец:
-RECOMMENDATIONS_JSON:[{"id":1,"match":95},{"id":2,"match":82}]
-
-Правила:
-- Отвечай по-русски, кратко и дружелюбно
-- Задавай уточняющие вопросы про бюджет и потребности
-- Предлагай 2–4 тарифа с % совпадения
-- Используй только тарифы из базы`;
-
-async function callAI(msg) {
-  history.push({role:'user', content:msg});
-  try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYS, messages:history})
-    });
-    const d = await r.json();
-    const full = d.content.map(b=>b.text||'').join('');
-    const m = full.match(/RECOMMENDATIONS_JSON:(\[.*?\])/s);
-    let recs = [];
-    if (m) { try { recs = JSON.parse(m[1]); } catch(e){} }
-    const clean = full.replace(/RECOMMENDATIONS_JSON:\[.*?\]/s,'').trim();
-    history.push({role:'assistant', content:full});
-    return {text:clean, recs};
-  } catch(e) {
-    return {text:'Ошибка соединения. Попробуй ещё раз.', recs:[]};
-  }
-}
-
-function addMsg(text, role, qrs=[]) {
-  const wrap = document.getElementById('chatMsgs');
-  const t = new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
-  const d = document.createElement('div');
-  d.className = `msg ${role}`;
-  const qrHtml = qrs.length ? `<div class="qr-row">${qrs.map(q=>`<button class="qr" onclick="sendQuick(this)">${q}</button>`).join('')}</div>` : '';
-  d.innerHTML = `<div class="msg-ava">${role==='ai'?'✦':'👤'}</div><div class="msg-body"><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>${qrHtml}<div class="msg-time">${t}</div></div>`;
-  wrap.appendChild(d);
-  wrap.scrollTop = wrap.scrollHeight;
-}
-
-function showTyping(v) {
-  const ti = document.getElementById('typing');
-  const wrap = document.getElementById('chatMsgs');
-  ti.classList.toggle('show', v);
-  if (v) wrap.appendChild(ti);
-  wrap.scrollTop = wrap.scrollHeight;
-}
-
-function updateRecs(recs) {
-  if (!recs.length) return;
-  document.getElementById('recBadge').textContent = recs.length;
-  document.getElementById('recList').innerHTML = recs.map((r,i) => {
-    const t = TARIFFS.find(x=>x.id===r.id); if (!t) return '';
-    const m = r.match||80;
-    return `<div class="rec-card" style="animation-delay:${i*.07}s">
-      <div class="rc-top">
-        <div class="rc-op"><div class="rc-op-dot" style="background:${t.c}"></div><div class="rc-op-name">${t.op}</div></div>
-        <div class="rc-price">${t.price} <small>₽/мес</small></div>
-      </div>
-      <div class="rc-name">${t.name}</div>
-      <div class="rc-specs">
-        <div><strong>${t.gb===100?'∞':t.gb+'ГБ'}</strong> инет</div>
-        <div><strong>${t.min===1000?'∞':t.min}</strong> мин</div>
-        <div><strong>${t.sms===500?'∞':(t.sms||'—')}</strong> SMS</div>
-      </div>
-      <div class="match-row">
-        <div class="match-lbl">Совпадение</div>
-        <div class="match-track"><div class="match-bar" style="width:${m}%"></div></div>
-        <div class="match-pct">${m}%</div>
-      </div>
-      <div class="rc-actions">
-        <button class="rc-btn-p">Выбрать тариф</button>
-        <button class="rc-btn-s">+ Сравнить</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function send() {
-  const inp = document.getElementById('inp');
-  const text = inp.value.trim();
-  if (!text || busy) return;
-  inp.value = ''; inp.style.height = 'auto';
-  addMsg(text, 'user');
-  busy = true; document.getElementById('sendBtn').disabled = true;
-  showTyping(true);
-  const {text:aiText, recs} = await callAI(text);
-  showTyping(false); busy = false; document.getElementById('sendBtn').disabled = false;
-  addMsg(aiText, 'ai');
-  if (recs.length) updateRecs(recs);
-}
-
-function sendQuick(btn) {
-  document.getElementById('inp').value = btn.textContent.trim();
-  btn.closest('.qr-row').style.display = 'none';
-  send();
-}
-function onKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
-function autoH(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
-</script>
 </body>
 </html>
