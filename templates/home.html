@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TariffAI — Найди свой тариф</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/page/home.css') }}">
+</head>
+
+<body>
+<nav>
+    <a href="/home" class="logo">Tariff<em>AI</em></a>
+    <ul>
+        <li><a href="/home" class="active">Главная</a></li>
+        <li><a href="/search">Поиск</a></li>
+        <li><a href="/search_ai">AI-Поиск</a></li>
+        <li><a href="/compare">Сравнение</a></li>
+    </ul>
+    <div></div>
+</nav>
+
+<div class="hero-wrap">
+    <div class="hero">
+        <div>
+            <div class="eyebrow">Умный подбор тарифов</div>
+            <h1>Найди<br>идеальный<br>
+                <mark>тариф</mark>
+            </h1>
+            <p class="hero-desc">Сравниваем сотни тарифов всех операторов. Фильтруй по цене, интернету, минутам — находи то, что нужно именно тебе.</p>
+            <div class="hero-btns">
+                <a href="/search" class="btn-hero-primary">Найти тариф →</a>
+                <a href="/search_ai" class="btn-hero-secondary">✦ Подобрать с AI</a>
+            </div>
+        </div>
+        <div class="hero-cards">
+            <div class="preview-card">
+                <div class="pc-top">
+                    <div class="pc-op">
+                        <div class="pc-dot" style="background:#e7011a"></div>
+                        <span class="pc-op-name">МТС</span></div>
+                    <div class="pc-price">449 <small>₽/мес</small></div>
+                </div>
+                <div class="pc-specs">
+                    <div>
+                        <div class="pc-spec-val">20 ГБ</div>
+                        <div class="pc-spec-label">интернет</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">300</div>
+                        <div class="pc-spec-label">минут</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">100</div>
+                        <div class="pc-spec-label">SMS</div>
+                    </div>
+                </div>
+                <div class="pc-badges"><span class="badge b-blue">Мессенджеры ∞</span><span class="badge b-green">Музыка ∞</span>
+                </div>
+            </div>
+            <div class="preview-card">
+                <div class="pc-top">
+                    <div class="pc-op">
+                        <div class="pc-dot" style="background:#009f6b"></div>
+                        <span class="pc-op-name">МегаФон</span></div>
+                    <div class="pc-price">650 <small>₽/мес</small></div>
+                </div>
+                <div class="pc-specs">
+                    <div>
+                        <div class="pc-spec-val">40 ГБ</div>
+                        <div class="pc-spec-label">интернет</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">600</div>
+                        <div class="pc-spec-label">минут</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">200</div>
+                        <div class="pc-spec-label">SMS</div>
+                    </div>
+                </div>
+                <div class="pc-badges">
+                    <span class="badge b-red">Видео ∞</span>
+                    <span class="badge b-blue">Соцсети ∞</span>
+                </div>
+            </div>
+            <div class="preview-card">
+                <div class="pc-top">
+                    <div class="pc-op">
+                        <div class="pc-dot" style="background:#6c63ff"></div>
+                        <span class="pc-op-name">Yota</span>
+                    </div>
+                    <div class="pc-price">500 <small>₽/мес</small></div>
+                </div>
+                <div class="pc-specs">
+                    <div>
+                        <div class="pc-spec-val">25 ГБ</div>
+                        <div class="pc-spec-label">интернет</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">500</div>
+                        <div class="pc-spec-label">минут</div>
+                    </div>
+                    <div>
+                        <div class="pc-spec-val">100</div>
+                        <div class="pc-spec-label">SMS</div>
+                    </div>
+                </div>
+                <div class="pc-badges">
+                    <span class="badge b-blue">Мессенджеры ∞</span>
+                    <span class="badge b-green">Музыка ∞</span>
+                    <span class="badge b-red">Видео ∞</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ticker-wrap">
+    <div class="ticker">
+        <span class="t-item">МТС</span>
+        <span class="t-item">Билайн</span>
+        <span class="t-item">Теле2</span>
+        <span class="t-item">МегаФон</span>
+        <span class="t-item">Yota</span>
+        <span class="t-item">200+ тарифов</span>
+        <span class="t-item">Актуальные цены</span>
+        <span class="t-item">AI‑подбор</span>
+        <span class="t-item">Сравнение тарифов</span>
+        <span class="t-item">Безлимиты</span>
+        <span class="t-item">МТС</span>
+        <span class="t-item">Билайн</span>
+        <span class="t-item">Теле2</span>
+        <span class="t-item">МегаФон</span>
+        <span class="t-item">Yota</span>
+        <span class="t-item">200+ тарифов</span>
+        <span class="t-item">Актуальные цены</span>
+        <span class="t-item">AI‑подбор</span>
+        <span class="t-item">Сравнение тарифов</span>
+        <span class="t-item">Безлимиты</span>
+        <span class="t-item">МТС</span>
+        <span class="t-item">Билайн</span>
+        <span class="t-item">Теле2</span>
+        <span class="t-item">МегаФон</span>
+        <span class="t-item">Yota</span>
+        <span class="t-item">200+ тарифов</span>
+        <span class="t-item">Актуальные цены</span>
+        <span class="t-item">AI‑подбор</span>
+        <span class="t-item">Сравнение тарифов</span>
+        <span class="t-item">Безлимиты</span>
+        <span class="t-item">МТС</span>
+        <span class="t-item">Билайн</span>
+        <span class="t-item">Теле2</span>
+        <span class="t-item">МегаФон</span>
+        <span class="t-item">Yota</span>
+        <span class="t-item">200+ тарифов</span>
+        <span class="t-item">Актуальные цены</span>
+        <span class="t-item">AI‑подбор</span>
+        <span class="t-item">Сравнение тарифов</span>
+        <span class="t-item">Безлимиты</span>
+    </div>
+</div>
+
+<section class="section">
+    <div class="sec-eyebrow">Операторы</div>
+    <h2 class="sec-title">Все крупнейшие<br>операторы России</h2>
+    <div class="ops-grid">
+        <a class="op-card">
+            <div class="op-circle" style="background:#e30613">M</div>
+            <div class="op-card-name">МТС</div>
+            <div class="op-card-sub">Большое покрытие</div>
+        </a>
+        <a class="op-card">
+            <div class="op-circle" style="background:#f8c300">B</div>
+            <div class="op-card-name">Билайн</div>
+            <div class="op-card-sub">Выгодные тарифы</div>
+        </a>
+        <a class="op-card">
+            <div class="op-circle" style="background:#1c1c1c">T2</div>
+            <div class="op-card-name">Теле2</div>
+            <div class="op-card-sub">Дешёвые тарифы</div>
+        </a>
+        <a class="op-card">
+            <div class="op-circle" style="background:#1d9c4a">M</div>
+            <div class="op-card-name">МегаФон</div>
+            <div class="op-card-sub">Высокая скорость интернета</div>
+        </a>
+        <a class="op-card">
+            <div class="op-circle" style="background:#3eb6e8">Y</div>
+            <div class="op-card-name">Yota</div>
+            <div class="op-card-sub">Прозрачные тарифы</div>
+        </a>
+    </div>
+</section>
+
+<div class="steps-wrap">
+    <div class="steps-inner">
+        <div class="step">
+            <div class="step-n">01</div>
+            <div class="step-t">Задай параметры</div>
+            <div class="step-d">Укажи нужный интернет, минуты, SMS и бюджет — фильтры работают в реальном времени.</div>
+        </div>
+        <div class="step">
+            <div class="step-n">02</div>
+            <div class="step-t">Сравни тарифы</div>
+            <div class="step-d">Добавляй до 3 тарифов в сравнение и смотри разницу бок о бок по всем параметрам.</div>
+        </div>
+        <div class="step">
+            <div class="step-n">03</div>
+            <div class="step-t">Подключи</div>
+            <div class="step-d">Переходи на официальный сайт оператора прямо из карточки тарифа и подключай онлайн.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-wrap">
+    <div class="cta-box">
+        <div>
+            <h2>Не знаешь с чего начать?</h2>
+            <p>AI‑помощник задаст несколько вопросов и подберёт тариф лично для тебя</p>
+        </div>
+        <a href="/search_ai" class="btn-cta">✦ Попробовать AI‑подбор</a>
+    </div>
+</div>
+</body>
+</html>

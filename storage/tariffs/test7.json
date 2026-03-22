@@ -1,0 +1,13 @@
+{
+  "id": 7,
+  "name": "Мой онлайн",
+  "operator": "Теле2",
+  "price": 299,
+  "gb": 12,
+  "minutes": 200,
+  "sms": 50,
+  "unlimited_messengers": true,
+  "unlimited_social": false,
+  "unlimited_video": false,
+  "unlimited_music": false
+}

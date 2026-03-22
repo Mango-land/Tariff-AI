@@ -1,0 +1,13 @@
+{
+  "id": 3,
+  "name": "Всё",
+  "operator": "Билайн",
+  "price": 390,
+  "gb": 15,
+  "minutes": 300,
+  "sms": 50,
+  "unlimited_messengers": false,
+  "unlimited_social": true,
+  "unlimited_video": false,
+  "unlimited_music": false
+}

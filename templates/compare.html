@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TariffAI — Сравнение</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/page/compare.css') }}">
+</head>
+<body>
+<nav>
+    <a href="/home" class="logo">Tariff<em>AI</em></a>
+    <ul>
+        <li><a href="/home">Главная</a></li>
+        <li><a href="/search">Поиск</a></li>
+        <li><a href="/search_ai">AI-Поиск</a></li>
+        <li><a href="/compare" class="active">Сравнение</a></li>
+    </ul>
+    <div></div>
+</nav>
+
+<div class="cmp-wrap">
+    <div id="cmpContent"></div>
+</div>
+
+<div class="modal-ov" id="modalOv" onclick="outsideClose(event)">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">Выбери тариф</div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-search">
+            <label for="mSearch">
+                <input type="text" id="mSearch" placeholder="Поиск по названию или оператору..." oninput="filterM(this.value)">
+            </label>
+        </div>
+        <div class="modal-list" id="mList"></div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='script/compare.js') }}"></script>
+
+</body>
+</html>

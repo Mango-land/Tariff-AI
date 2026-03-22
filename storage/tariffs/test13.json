@@ -1,0 +1,13 @@
+{
+  "id": 13,
+  "name": "Yota+",
+  "operator": "Yota",
+  "price": 500,
+  "gb": 25,
+  "minutes": 500,
+  "sms": 100,
+  "unlimited_messengers": true,
+  "unlimited_social": true,
+  "unlimited_video": true,
+  "unlimited_music": true
+}

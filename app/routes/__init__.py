@@ -1,2 +1,2 @@
-from .page import page_bp
-from .api import api_bp
+from .api import api_blueprint
+from .page import page_blueprint

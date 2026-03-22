@@ -1,0 +1,15 @@
+{
+  "id": 100,
+  "name": "Membrana",
+  "description": "Для тех, кто управляет своим временем — настраивайте режимы приватности и окружение в сети",
+  "link": "https://moskva.mts.ru/personal/mobilnaya-svyaz/tarifi/vse-tarifi/mts-membrana",
+  "operator": "MTC",
+  "price": 1900,
+  "gb": 100,
+  "minutes": 2000,
+  "sms": 100,
+  "unlimited_messengers": true,
+  "unlimited_social": true,
+  "unlimited_video": true,
+  "unlimited_music": true
+}

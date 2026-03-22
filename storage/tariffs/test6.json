@@ -1,0 +1,13 @@
+{
+  "id": 6,
+  "name": "Мой разговор",
+  "operator": "Теле2",
+  "price": 199,
+  "gb": 5,
+  "minutes": 100,
+  "sms": 0,
+  "unlimited_messengers": false,
+  "unlimited_social": false,
+  "unlimited_video": false,
+  "unlimited_music": false
+}

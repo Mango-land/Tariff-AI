@@ -1,23 +1,23 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, redirect, url_for, render_template
 
-page_bp = Blueprint('page', __name__)
+page_blueprint = Blueprint('page', __name__)
 
-@page_bp.route('/')
+@page_blueprint.route('/')
 def index():
     return redirect(url_for('page.home'))
 
-@page_bp.route('/home')
+@page_blueprint.route('/home')
 def home():
-    return render_template('page/index.html')
+    return render_template('home.html')
 
-@page_bp.route('/search')
+@page_blueprint.route('/search')
 def search():
-    return render_template('page/search.html')
+    return render_template('search.html')
 
-@page_bp.route('/ai_search')
-def ai_search():
-    return render_template('page/ai_search.html')
+@page_blueprint.route('/search_ai')
+def search_ai():
+    return render_template('search_ai.html')
 
-@page_bp.route('/compare')
+@page_blueprint.route('/compare')
 def compare():
-    return render_template('page/compare.html')
+    return render_template('compare.html')
