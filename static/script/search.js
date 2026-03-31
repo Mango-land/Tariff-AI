@@ -68,19 +68,23 @@ document.querySelectorAll('.op-btn').forEach(b => b.addEventListener('click', ()
 
 async function loadTariffs() {
     try {
-        const response = await fetch('/api/get/all_tariffs');
-        const result = await response.json();
+        const response = await fetch('/api/get/all_tariffs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
 
-        if (!result.success) {
-            console.error('Failed to load tariffs:', result.error);
+        if (!data.success) {
+            console.error('Failed to load tariffs:', data.error);
             return false;
         }
 
-        result.tariffs.forEach(data => {
-            TARIFFS.push(data);
+        data.tariffs.forEach(t => {
+            TARIFFS.push(t);
         });
 
-        render();
         return true;
     } catch (error) {
         console.error('Error loading tariffs:', error);
@@ -189,8 +193,13 @@ function toggleCmp(event, id) {
         compareList.push(id);
     } else compareList.splice(i, 1);
 
+    saveCompareToStorage();
     updateCmpBar();
     render();
+}
+
+function saveCompareToStorage() {
+    localStorage.setItem('compareTariffs', JSON.stringify(compareList));
 }
 
 function updateCmpBar() {

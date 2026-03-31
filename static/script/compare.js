@@ -30,21 +30,42 @@ const ROWS = [
     { lbl: '🎵 Музыка', u: 'music' },
 ];
 
+function loadSelectedFromStorage() {
+    const stored = localStorage.getItem('compareTariffs');
+
+    if (stored) {
+        try {
+            const selected = JSON.parse(stored);
+
+            selected.map((id, i) => {
+                slots[i] = tariffs.find(t => t.id === id);
+            })
+        } catch(e) {}
+    }
+
+    localStorage.removeItem('compareTariffs');
+}
+
 async function loadTariffs() {
     try {
-        const response = await fetch('/api/get/all_tariffs');
-        const result = await response.json();
+        const response = await fetch('/api/get/all_tariffs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
 
-        if (!result.success) {
+        if (!data.success) {
+            console.error('Failed to load tariffs:', data.error);
             return false;
         }
 
-        tariffs = result.tariffs.map(item => ({
+        tariffs = data.tariffs.map(item => ({
             ...item,
             c: getOperatorColor(item.operator)
         }));
 
-        render();
         return true;
     } catch (error) {
         return false;
@@ -191,6 +212,8 @@ function clearAll() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadTariffs();
+
+    loadSelectedFromStorage();
 
     render();
 });
